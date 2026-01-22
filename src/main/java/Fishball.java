@@ -20,7 +20,62 @@ class Task {
         return this.done;
     }
 }
+class Deadline extends Task {
+    private String deadline;
+    public Deadline (String task, boolean done, String deadline){
+        super(task, done);
+        this.deadline = deadline;
+    }
+    @Override
+    public String toString() {
+        String out = "[D]";
+        if (this.done){
+            out = out + "[X]";
+        } else {
+            out = out + "[ ]";
+        }
+        out = out + " " + this.task + "(by: " + deadline + ")";
+        return out;
+    }
+}
+class Todo extends Task {
+    public Todo (String task, boolean done){
+        super(task, done);
+    }
 
+    @Override
+    public String toString() {
+        String out = "[T]";
+        if (this.done){
+            out = out + "[X]";
+        } else {
+            out = out + "[ ]";
+        }
+        out = out + " " + this.task;
+        return out;
+    }
+}
+
+class Event extends Task {
+    private String start;
+    private String end;
+    public Event (String task, boolean done, String start, String end){
+        super(task, done);
+        this.start = start;
+        this.end = end;
+    }
+    @Override
+    public String toString() {
+        String out = "[E]";
+        if (this.done){
+            out = out + "[X]";
+        } else {
+            out = out + "[ ]";
+        }
+        out = out + " " + this.task + "(from: " + this.start + " to: " + this.end + ")";
+        return out;
+    }
+}
 public class Fishball {
     public static String horiline = "____________________________________________________________\n";
     public static String exitmsg = "Bye. Hope to see you again soon!\n";
@@ -43,6 +98,7 @@ public class Fishball {
             String input = scanner.nextLine().trim();
             String[] parse = input.split(" ");
             String command = parse[0];
+            Task curr;
             if (command.equals("bye") && parse.length == 1) {
                 System.out.println(indent + horiline +
                                     indent + exitmsg +
@@ -50,16 +106,11 @@ public class Fishball {
                 return;
             }
             if (command.equals("list") && parse.length == 1){
-                System.out.println(indent + horiline);
-                System.out.println(indent + "Here are the tasks in your list:\n");
+                System.out.print(indent + horiline);
+                System.out.println(indent + "Here are the tasks in your list:");
                 for (int i = 0; i < record.size(); i++){
                     System.out.print(indent + (i+1) + '.');
-                    if (record.get(i).checkDone()){
-                        System.out.print("[X] ");
-                    } else {
-                        System.out.print("[ ] ");
-                    }
-                    System.out.print(record.get(i).getTask() + '\n');
+                    System.out.println(record.get(i));
                 }
                 System.out.println(indent + horiline);
             } else if (command.equals("mark") && parse.length == 2) {
@@ -71,7 +122,7 @@ public class Fishball {
                 } else {
                     System.out.println(indent + horiline +
                             indent + "Nice! I've marked this task as done\n" +
-                            indent + "   [X] " + record.get(index).getTask() + '\n' + indent + horiline);
+                            indent + record.get(index) + '\n' + indent + horiline);
                     record.get(index).mark();
                 }
 
@@ -84,15 +135,83 @@ public class Fishball {
                 } else {
                     System.out.println(indent + horiline +
                             indent + "Nice! I've marked this task as not done yet\n" +
-                            indent + "   [ ] " + record.get(index).getTask() + '\n' + indent + horiline);
+                            indent + record.get(index) + '\n' + indent + horiline);
                     record.get(index).unmark();
                 }
 
             } else {
-                record.add(new Task(input, false));
-                System.out.println(indent + horiline +
-                                    indent + "added: " + input + '\n' +
-                                    indent + horiline);
+                String taskType = parse[0];
+                if (taskType.equals("todo")){
+                    String task = "";
+                    for (int i = 1; i < parse.length; i++){
+                        task = task + parse[i] + " ";
+                    }
+                    curr = new Todo(task, false);
+                    record.add(curr);
+                    System.out.println(indent + horiline +
+                            indent + "Got it. I've added this task: \n" +
+                            indent + "    " + curr);
+                } else if (taskType.equals("deadline")){
+                    String task = "";
+                    String deadline = "";
+                    for (int i = 1; i < parse.length; i++){
+                        if (parse[i].equals("/by")){
+                            for (int j = i+1; j < parse.length; j++){
+                                if (j == parse.length-1){
+                                    deadline = deadline + parse[j];
+                                    break;
+                                }
+                                deadline = deadline + parse[j] + " ";
+                            }
+                            break;
+                        }
+                        task = task + parse[i] + " ";
+                    }
+                    curr = new Deadline(task, false, deadline);
+                    record.add(curr);
+                    System.out.println(indent + horiline +
+                            indent + "Got it. I've added this task: \n" +
+                            indent + "    " + curr);
+                } else if (taskType.equals("event")){
+                    String task = "";
+                    String start = "";
+                    String end = "";
+                    for (int i = 1; i < parse.length; i++){
+                        if (parse[i].equals("/from")){
+                            i++;
+                            while (!parse[i].equals("/to") && i < parse.length){
+                                if (parse[i+1].equals("/to")){
+                                    start = start + parse[i];
+                                    i++;
+                                    break;
+                                }
+                                start = start + parse[i] + " ";
+                                i++;
+                            }
+                        }
+                        if (parse[i].equals("/to")){
+                            for (int j = i+1; j < parse.length; j++){
+                                if (j == parse.length - 1){
+                                    end = end + parse[j];
+                                    break;
+                                }
+                                end = end + parse[j] + " ";
+                            }
+                            break;
+                        }
+                        task = task + parse[i] + " ";
+                    }
+                    curr = new Event(task, false, start, end);
+                    record.add(curr);
+                    System.out.println(indent + horiline +
+                            indent + "Got it. I've added this task: \n" +
+                            indent + "    " + curr);
+                } else {
+                    System.out.println(indent + horiline +
+                                       indent + "Please use a valid event type: task, deadline, event!\n" +
+                                        indent + horiline);
+                }
+                System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
             }
         }
     }
