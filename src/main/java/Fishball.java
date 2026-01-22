@@ -1,5 +1,37 @@
-import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Scanner;
+
+// Custom Exception Classes
+class FishballException extends Exception {
+    public FishballException(String message) {
+        super(message);
+    }
+}
+
+class EmptyTaskException extends FishballException {
+    public EmptyTaskException(String message) {
+        super(message);
+    }
+}
+
+class InvalidIndexException extends FishballException {
+    public InvalidIndexException(String message) {
+        super(message);
+    }
+}
+
+class InvalidCommandException extends FishballException {
+    public InvalidCommandException(String message) {
+        super(message);
+    }
+}
+
+class MissingParameterException extends FishballException {
+    public MissingParameterException(String message) {
+        super(message);
+    }
+}
+
 class Task {
     String task;
     boolean done;
@@ -80,7 +112,7 @@ public class Fishball {
     public static String horiline = "____________________________________________________________\n";
     public static String exitmsg = "Bye. Hope to see you again soon!\n";
     public static String indent = "     ";
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FishballException{
         String logo = " ____        _        \n"
                 + "|  _ \\ _   _| | _____ \n"
                 + "| | | | | | | |/ / _ \\\n"
@@ -95,123 +127,149 @@ public class Fishball {
         System.out.println(indent + "What can I do for you?\n" + indent + horiline);
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            String input = scanner.nextLine().trim();
-            String[] parse = input.split(" ");
-            String command = parse[0];
-            Task curr;
-            if (command.equals("bye") && parse.length == 1) {
-                System.out.println(indent + horiline +
-                                    indent + exitmsg +
-                                    indent + horiline);
-                return;
-            }
-            if (command.equals("list") && parse.length == 1){
-                System.out.print(indent + horiline);
-                System.out.println(indent + "Here are the tasks in your list:");
-                for (int i = 0; i < record.size(); i++){
-                    System.out.print(indent + (i+1) + '.');
-                    System.out.println(record.get(i));
+            try {
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty()) {
+                    throw new InvalidCommandException("This is an empty input! Please enter a command!");
                 }
-                System.out.println(indent + horiline);
-            } else if (command.equals("mark") && parse.length == 2) {
-                int index = Integer.parseInt(parse[1]) - 1;
-                if (index < 0 || index > record.size() - 1){
+                String[] parse = input.split(" ");
+                String command = parse[0];
+                Task curr;
+                if (command.equals("bye") && parse.length == 1) {
                     System.out.println(indent + horiline +
-                            indent + "Please provide a valid task number!\n" +
+                            indent + exitmsg +
                             indent + horiline);
-                } else {
+                    return;
+                }
+                if (command.equals("list")){
+                    if (parse.length != 1){
+                        throw new InvalidCommandException("The list command does not take any parameters! Just type 'list' to see your tasks.");
+                    }
+                    System.out.print(indent + horiline);
+                    System.out.println(indent + "Here are the tasks in your list:");
+                    for (int i = 0; i < record.size(); i++){
+                        System.out.print(indent + (i+1) + '.');
+                        System.out.println(record.get(i));
+                    }
+                    System.out.println(indent + horiline);
+                } else if (command.equals("mark") && parse.length == 2) {
+                    int index = Integer.parseInt(parse[1]) - 1;
+                    if (index < 0 || index >= record.size()){
+                        throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                    }
                     System.out.println(indent + horiline +
                             indent + "Nice! I've marked this task as done\n" +
                             indent + record.get(index) + '\n' + indent + horiline);
                     record.get(index).mark();
-                }
 
-            } else if (command.equals("unmark") && parse.length == 2) {
-                int index = Integer.parseInt(parse[1]) - 1;
-                if (index < 0 || index > record.size() - 1){
+                } else if (command.equals("unmark") && parse.length == 2) {
+                    int index = Integer.parseInt(parse[1]) - 1;
+                    if (index < 0 || index >= record.size()){
+                        throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                    }
                     System.out.println(indent + horiline +
-                            indent + "Please provide a valid task number!\n" +
-                            indent + horiline);
-                } else {
-                    System.out.println(indent + horiline +
-                            indent + "Nice! I've marked this task as not done yet\n" +
+                            indent + "Ok, I've marked this task as not done yet\n" +
                             indent + record.get(index) + '\n' + indent + horiline);
                     record.get(index).unmark();
-                }
 
-            } else {
-                String taskType = parse[0];
-                if (taskType.equals("todo")){
-                    String task = "";
-                    for (int i = 1; i < parse.length; i++){
-                        task = task + parse[i] + " ";
-                    }
-                    curr = new Todo(task, false);
-                    record.add(curr);
-                    System.out.println(indent + horiline +
-                            indent + "Got it. I've added this task: \n" +
-                            indent + "    " + curr);
-                } else if (taskType.equals("deadline")){
-                    String task = "";
-                    String deadline = "";
-                    for (int i = 1; i < parse.length; i++){
-                        if (parse[i].equals("/by")){
-                            for (int j = i+1; j < parse.length; j++){
-                                if (j == parse.length-1){
-                                    deadline = deadline + parse[j];
-                                    break;
-                                }
-                                deadline = deadline + parse[j] + " ";
-                            }
-                            break;
-                        }
-                        task = task + parse[i] + " ";
-                    }
-                    curr = new Deadline(task, false, deadline);
-                    record.add(curr);
-                    System.out.println(indent + horiline +
-                            indent + "Got it. I've added this task: \n" +
-                            indent + "    " + curr);
-                } else if (taskType.equals("event")){
-                    String task = "";
-                    String start = "";
-                    String end = "";
-                    for (int i = 1; i < parse.length; i++){
-                        if (parse[i].equals("/from")){
-                            i++;
-                            while (!parse[i].equals("/to") && i < parse.length){
-                                if (parse[i+1].equals("/to")){
-                                    start = start + parse[i];
-                                    i++;
-                                    break;
-                                }
-                                start = start + parse[i] + " ";
-                                i++;
-                            }
-                        }
-                        if (parse[i].equals("/to")){
-                            for (int j = i+1; j < parse.length; j++){
-                                if (j == parse.length - 1){
-                                    end = end + parse[j];
-                                    break;
-                                }
-                                end = end + parse[j] + " ";
-                            }
-                            break;
-                        }
-                        task = task + parse[i] + " ";
-                    }
-                    curr = new Event(task, false, start, end);
-                    record.add(curr);
-                    System.out.println(indent + horiline +
-                            indent + "Got it. I've added this task: \n" +
-                            indent + "    " + curr);
                 } else {
-                    System.out.println(indent + horiline +
-                                       indent + "Please use a valid event type: task, deadline, event!\n" +
-                                        indent + horiline);
+                    String taskType = parse[0];
+                    if (taskType.equals("todo")){
+                        String task = "";
+                        for (int i = 1; i < parse.length; i++){
+                            task = task + parse[i] + " ";
+                        }
+                        task = task.trim();
+                        if (task.isEmpty()) {
+                            throw new EmptyTaskException("The description of a todo cannot be empty!");
+                        }
+                        curr = new Todo(task, false);
+                        record.add(curr);
+                        System.out.println(indent + horiline +
+                                indent + "Got it. I've added this task: \n" +
+                                indent + "    " + curr);
+                    } else if (taskType.equals("deadline")){
+                        String task = "";
+                        String deadline = "";
+                        boolean hasBy = false;
+                        for (int i = 1; i < parse.length; i++){
+                            if (parse[i].equals("/by")){
+                                hasBy = true;
+                                for (int j = i+1; j < parse.length; j++){
+                                    if (j == parse.length-1){
+                                        deadline = deadline + parse[j];
+                                        break;
+                                    }
+                                    deadline = deadline + parse[j] + " ";
+                                }
+                                break;
+                            }
+                            task = task + parse[i] + " ";
+                        }
+                        task = task.trim();
+                        deadline = deadline.trim();
+                        if (task.isEmpty() || !hasBy || deadline.isEmpty()) {
+                            throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <date>");
+                        }
+                        curr = new Deadline(task, false, deadline);
+                        record.add(curr);
+                        System.out.println(indent + horiline +
+                                indent + "Got it. I've added this task: \n" +
+                                indent + "    " + curr);
+                    } else if (taskType.equals("event")){
+                        String task = "";
+                        String start = "";
+                        String end = "";
+                        boolean hasFrom = false;
+                        boolean hasTo = false;
+                        for (int i = 1; i < parse.length; i++){
+                            if (parse[i].equals("/from")){
+                                hasFrom = true;
+                                i++;
+                                while (i < parse.length && !parse[i].equals("/to")){
+                                    if (i == parse.length - 1 || (i + 1 < parse.length && parse[i+1].equals("/to"))){
+                                        start = start + parse[i];
+                                        i++;
+                                        break;
+                                    }
+                                    start = start + parse[i] + " ";
+                                    i++;
+                                }
+                                i--;
+                            }
+                            if (parse[i].equals("/to")){
+                                hasTo = true;
+                                for (int j = i+1; j < parse.length; j++){
+                                    if (j == parse.length - 1){
+                                        end = end + parse[j];
+                                        break;
+                                    }
+                                    end = end + parse[j] + " ";
+                                }
+                                break;
+                            }
+                            task = task + parse[i] + " ";
+                        }
+                        task = task.trim();
+                        start = start.trim();
+                        end = end.trim();
+                        if (task.isEmpty() || !hasFrom || start.isEmpty() || !hasTo || end.isEmpty()) {
+                            throw new MissingParameterException("Please provide a start time in the format: event <task> /from <start> /to <end>");
+                        }
+                        curr = new Event(task, false, start, end);
+                        record.add(curr);
+                        System.out.println(indent + horiline +
+                                indent + "Got it. I've added this task: \n" +
+                                indent + "    " + curr);
+                    } else {
+                        throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, mark, unmark, or bye.");
+                    }
+                    System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
                 }
-                System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
+            }catch (FishballException e) {
+                System.out.println(indent + horiline + indent + "OOPS! Come on fishball! " + e.getMessage() + "\n" + indent + horiline);
+            } catch (NumberFormatException e) {
+                System.out.println(indent + horiline + indent + "OOPS! Please provide a valid task number.\n" + indent + horiline);
             }
         }
     }
