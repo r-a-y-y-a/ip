@@ -141,7 +141,25 @@ public class Fishball {
                             indent + horiline);
                     return;
                 }
-                if (command.equals("list")){
+
+                if (command.equals("delete")){
+                    if (parse.length != 2){
+                        throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                    } else {
+                        try {
+                            int index = Integer.parseInt(parse[1].trim()) - 1;
+                            if (index < 0 || index >= record.size()){
+                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                            }
+                            Task delete = record.get(index);
+                            record.remove(index);
+                            System.out.println(indent + horiline + indent + "Noted. I've removed this task:\n" + indent + "  " + delete);
+                            System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
+                        } catch (NumberFormatException e) {
+                            throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                        }
+                    }
+                } else if (command.equals("list")){
                     if (parse.length != 1){
                         throw new InvalidCommandException("The list command does not take any parameters! Just type 'list' to see your tasks.");
                     }
@@ -157,21 +175,20 @@ public class Fishball {
                     if (index < 0 || index >= record.size()){
                         throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
                     }
+                    record.get(index).mark();
                     System.out.println(indent + horiline +
                             indent + "Nice! I've marked this task as done\n" +
                             indent + record.get(index) + '\n' + indent + horiline);
-                    record.get(index).mark();
 
                 } else if (command.equals("unmark") && parse.length == 2) {
                     int index = Integer.parseInt(parse[1]) - 1;
                     if (index < 0 || index >= record.size()){
                         throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
                     }
+                    record.get(index).unmark();
                     System.out.println(indent + horiline +
                             indent + "Ok, I've marked this task as not done yet\n" +
                             indent + record.get(index) + '\n' + indent + horiline);
-                    record.get(index).unmark();
-
                 } else {
                     String taskType = parse[0];
                     if (taskType.equals("todo")){
