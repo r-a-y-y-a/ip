@@ -1,4 +1,7 @@
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 // Custom Exception Classes
@@ -58,14 +61,23 @@ class Task {
     }
 }
 class Deadline extends Task {
-    private String deadline;
-    public Deadline (String task, boolean done, String deadline){
+    private LocalDateTime deadline;
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm");
+    private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
+
+    public Deadline (String task, boolean done, LocalDateTime deadline){
         super("d", task, done);
         this.deadline = deadline;
     }
-    public String getDeadline() {
+
+    public LocalDateTime getDeadline() {
         return this.deadline;
     }
+
+    public static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateStr, INPUT_FORMATTER);
+    }
+
     @Override
     public String toString() {
         String out = "[D]";
@@ -74,7 +86,7 @@ class Deadline extends Task {
         } else {
             out = out + "[ ]";
         }
-        out = out + " " + this.task + "(by: " + deadline + ")";
+        out = out + " " + this.task + "(by: " + deadline.format(OUTPUT_FORMATTER) + ")";
         return out;
     }
 }
@@ -96,19 +108,29 @@ class Todo extends Task {
 }
 
 class Event extends Task {
-    private String start;
-    private String end;
-    public Event (String task, boolean done, String start, String end){
+    private LocalDateTime start;
+    private LocalDateTime end;
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm");
+    private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
+
+    public Event (String task, boolean done, LocalDateTime start, LocalDateTime end){
         super("e", task, done);
         this.start = start;
         this.end = end;
     }
-    public String getStart(){
+
+    public LocalDateTime getStart(){
         return this.start;
     }
-    public String getEnd(){
+
+    public LocalDateTime getEnd(){
         return this.end;
     }
+
+    public static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateStr, INPUT_FORMATTER);
+    }
+
     @Override
     public String toString() {
         String out = "[E]";
@@ -117,7 +139,7 @@ class Event extends Task {
         } else {
             out = out + "[ ]";
         }
-        out = out + " " + this.task + "(from: " + this.start + " to: " + this.end + ")";
+        out = out + " " + this.task + "(from: " + this.start.format(OUTPUT_FORMATTER) + " to: " + this.end.format(OUTPUT_FORMATTER) + ")";
         return out;
     }
 }
@@ -157,9 +179,12 @@ public class Fishball {
                     String[] parse = s.nextLine().split(",");
                     String type = parse[0];
                     if (type.equals("d")){
-                        record.add(new Deadline(parse[1], Boolean.parseBoolean(parse[2]), parse[3]));
+                        LocalDateTime deadlineDate = LocalDateTime.parse(parse[3]);
+                        record.add(new Deadline(parse[1], Boolean.parseBoolean(parse[2]), deadlineDate));
                     } else if (type.equals("e")) {
-                        record.add(new Event(parse[1], Boolean.parseBoolean(parse[2]), parse[3], parse[4]));
+                        LocalDateTime startDate = LocalDateTime.parse(parse[3]);
+                        LocalDateTime endDate = LocalDateTime.parse(parse[4]);
+                        record.add(new Event(parse[1], Boolean.parseBoolean(parse[2]), startDate, endDate));
                     } else {
                         record.add(new Todo(parse[1], Boolean.parseBoolean(parse[2])));
                     }
@@ -197,6 +222,41 @@ public class Fishball {
                         System.out.println(record.get(i));
                     }
                     System.out.println(indent + horiline);
+                } else if (command.equals("find")){
+                    if (parse.length != 3){
+                        throw new InvalidCommandException("The find command requires a date and time! Use format: find <dd-MM-yyyy> <HHmm>");
+                    }
+                    try {
+                        LocalDateTime searchDateTime = LocalDateTime.parse(parse[1] + " " + parse[2], DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"));
+                        System.out.print(indent + horiline);
+                        System.out.println(indent + "Tasks on " + searchDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm")) + ":");
+                        boolean found = false;
+                        for (int i = 0; i < record.size(); i++){
+                            Task t = record.get(i);
+                            boolean matches = false;
+                            if (t.getType().equals("d")){
+                                Deadline d = (Deadline) t;
+                                if (d.getDeadline().equals(searchDateTime)) matches = true;
+                            } else if (t.getType().equals("e")) {
+                                Event e = (Event) t;
+                                if ((e.getStart().equals(searchDateTime) || e.getEnd().equals(searchDateTime)) ||
+                                        (e.getStart().isBefore(searchDateTime) && e.getEnd().isAfter(searchDateTime))) {
+                                    matches = true;
+                                }
+                            }
+                            if (matches) {
+                                System.out.print(indent + (i+1) + '.');
+                                System.out.println(record.get(i));
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            System.out.println(indent + "No tasks found for this date/time.");
+                        }
+                        System.out.println(indent + horiline);
+                    } catch (DateTimeParseException e) {
+                        throw new InvalidCommandException("Invalid date/time format! Use: find <dd-MM-yyyy> <HHmm>");
+                    }
                 } else {
                     if (command.equals("delete")) {
                         if (parse.length != 2) {
@@ -271,13 +331,18 @@ public class Fishball {
                             task = task.trim();
                             deadline = deadline.trim();
                             if (task.isEmpty() || !hasBy || deadline.isEmpty()) {
-                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <date>");
+                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm>");
                             }
-                            curr = new Deadline(task, false, deadline);
-                            record.add(curr);
-                            System.out.println(indent + horiline +
-                                    indent + "Got it. I've added this task: \n" +
-                                    indent + "    " + curr);
+                            try {
+                                LocalDateTime deadlineDate = Deadline.parseDate(deadline);
+                                curr = new Deadline(task, false, deadlineDate);
+                                record.add(curr);
+                                System.out.println(indent + horiline +
+                                        indent + "Got it. I've added this task: \n" +
+                                        indent + "    " + curr);
+                            } catch (DateTimeParseException e) {
+                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
+                            }
                         } else if (taskType.equals("event")) {
                             String task = "";
                             String start = "";
@@ -316,15 +381,21 @@ public class Fishball {
                             start = start.trim();
                             end = end.trim();
                             if (task.isEmpty() || !hasFrom || start.isEmpty() || !hasTo || end.isEmpty()) {
-                                throw new MissingParameterException("Please provide a start time in the format: event <task> /from <start> /to <end>");
+                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm>");
                             }
-                            curr = new Event(task, false, start, end);
-                            record.add(curr);
-                            System.out.println(indent + horiline +
-                                    indent + "Got it. I've added this task: \n" +
-                                    indent + "    " + curr);
+                            try {
+                                LocalDateTime startDate = Event.parseDate(start);
+                                LocalDateTime endDate = Event.parseDate(end);
+                                curr = new Event(task, false, startDate, endDate);
+                                record.add(curr);
+                                System.out.println(indent + horiline +
+                                        indent + "Got it. I've added this task: \n" +
+                                        indent + "    " + curr);
+                            } catch (DateTimeParseException e) {
+                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
+                            }
                         } else {
-                            throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, mark, unmark, or bye.");
+                            throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, find, mark, unmark, or bye.");
                         }
                         System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
                     }
