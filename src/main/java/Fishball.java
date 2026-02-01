@@ -4,36 +4,17 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
-// Custom Exception Classes
-class FishballException extends Exception {
-    public FishballException(String message) {
-        super(message);
-    }
-}
 
-class EmptyTaskException extends FishballException {
-    public EmptyTaskException(String message) {
-        super(message);
-    }
-}
+import tasks.Task;
+import tasks.Deadline;
+import tasks.Todo;
+import tasks.Event;
 
-class InvalidIndexException extends FishballException {
-    public InvalidIndexException(String message) {
-        super(message);
-    }
-}
-
-class InvalidCommandException extends FishballException {
-    public InvalidCommandException(String message) {
-        super(message);
-    }
-}
-
-class MissingParameterException extends FishballException {
-    public MissingParameterException(String message) {
-        super(message);
-    }
-}
+import exceptions.FishballException;
+import exceptions.EmptyTaskException;
+import exceptions.InvalidIndexException;
+import exceptions.InvalidCommandException;
+import exceptions.MissingParameterException;
 
 class Storage {
     private File f;
@@ -99,112 +80,44 @@ class Storage {
         }
     }
 }
-class Task {
-    String task;
-    boolean done;
-    final String type;
-    public Task(String type, String task, boolean done){
-        this.task = task;
-        this.done = done;
-        this.type = type;
-    }
-    public String getType() {
-        return this.type;
-    }
-    public String getTask(){
-        return this.task;
-    }
-    public void mark() {
-        this.done = true;
-    }
-    public void unmark() {
-        this.done = false;
-    }
-    public boolean checkDone(){
-        return this.done;
-    }
-}
-class Deadline extends Task {
-    private final LocalDateTime deadline;
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm");
-    private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
 
-    public Deadline (String task, boolean done, LocalDateTime deadline){
-        super("d", task, done);
-        this.deadline = deadline;
+class TaskList {
+    private ArrayList<Task> tasks;
+
+    public TaskList() {
+        this.tasks = new ArrayList<>();
     }
 
-    public LocalDateTime getDeadline() {
-        return this.deadline;
+    public TaskList(ArrayList<Task> tasks) {
+        this.tasks = tasks;
     }
 
-    public static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
-        return LocalDateTime.parse(dateStr, INPUT_FORMATTER);
+    public void add(Task task) {
+        this.tasks.add(task);
     }
 
-    @Override
+    public void remove(int index) {
+        this.tasks.remove(index);
+    }
+
+    public Task get(int index) {
+        return this.tasks.get(index);
+    }
+
+    public int size() {
+        return this.tasks.size();
+    }
+
+    public ArrayList<Task> getAll() {
+        return this.tasks;
+    }
+
     public String toString() {
-        String out = "[D]";
-        if (this.done){
-            out = out + "[X]";
-        } else {
-            out = out + "[ ]";
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            out.append(i + 1).append(".").append(tasks.get(i).toString()).append("\n");
         }
-        out = out + " " + this.task + "(by: " + deadline.format(OUTPUT_FORMATTER) + ")";
-        return out;
-    }
-}
-class Todo extends Task {
-    public Todo (String task, boolean done){
-        super("t", task, done);
-    }
-    @Override
-    public String toString() {
-        String out = "[T]";
-        if (this.done){
-            out = out + "[X]";
-        } else {
-            out = out + "[ ]";
-        }
-        out = out + " " + this.task;
-        return out;
-    }
-}
-
-class Event extends Task {
-    private final LocalDateTime start;
-    private final LocalDateTime end;
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm");
-    private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
-
-    public Event (String task, boolean done, LocalDateTime start, LocalDateTime end){
-        super("e", task, done);
-        this.start = start;
-        this.end = end;
-    }
-
-    public LocalDateTime getStart(){
-        return this.start;
-    }
-
-    public LocalDateTime getEnd(){
-        return this.end;
-    }
-
-    public static LocalDateTime parseDate(String dateStr) throws DateTimeParseException {
-        return LocalDateTime.parse(dateStr, INPUT_FORMATTER);
-    }
-
-    @Override
-    public String toString() {
-        String out = "[E]";
-        if (this.done){
-            out = out + "[X]";
-        } else {
-            out = out + "[ ]";
-        }
-        out = out + " " + this.task + "(from: " + this.start.format(OUTPUT_FORMATTER) + " to: " + this.end.format(OUTPUT_FORMATTER) + ")";
-        return out;
+        return out.toString();
     }
 }
 
@@ -216,7 +129,7 @@ public class Fishball {
     public static void main(String[] args) throws FishballException{
         //System.out.println(logo);
         Storage s = new Storage("../../../data/fishball.txt");
-        ArrayList<Task> record = s.load();
+        TaskList record = new TaskList(s.load());
 
         System.out.println(indent + horiline + indent + "Hello, I'm Fishball!\n");
         System.out.println(indent + "What can I do for you?\n" + indent + horiline);
@@ -304,24 +217,32 @@ public class Fishball {
                                 }
                             }
                         } else if (command.equals("mark") && parse.length == 2) {
-                            int index = Integer.parseInt(parse[1]) - 1;
-                            if (index < 0 || index >= record.size()) {
-                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                            try {
+                                int index = Integer.parseInt(parse[1]) - 1;
+                                if (index < 0 || index >= record.size()) {
+                                    throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                }
+                                record.get(index).mark();
+                                System.out.println(indent + horiline +
+                                        indent + "Nice! I've marked this task as done\n" +
+                                        indent + record.get(index) + '\n' + indent + horiline);
+                            } catch (NumberFormatException e) {
+                                throw new MissingParameterException("Please provide a valid task number.");
                             }
-                            record.get(index).mark();
-                            System.out.println(indent + horiline +
-                                    indent + "Nice! I've marked this task as done\n" +
-                                    indent + record.get(index) + '\n' + indent + horiline);
 
                         } else if (command.equals("unmark") && parse.length == 2) {
-                            int index = Integer.parseInt(parse[1]) - 1;
-                            if (index < 0 || index >= record.size()) {
-                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                            try {
+                                int index = Integer.parseInt(parse[1]) - 1;
+                                if (index < 0 || index >= record.size()) {
+                                    throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                }
+                                record.get(index).unmark();
+                                System.out.println(indent + horiline +
+                                        indent + "Ok, I've marked this task as not done yet\n" +
+                                        indent + record.get(index) + '\n' + indent + horiline);
+                            } catch (NumberFormatException e) {
+                                throw new MissingParameterException("Please provide a valid task number.");
                             }
-                            record.get(index).unmark();
-                            System.out.println(indent + horiline +
-                                    indent + "Ok, I've marked this task as not done yet\n" +
-                                    indent + record.get(index) + '\n' + indent + horiline);
                         } else {
                             String taskType = parse[0];
                             if (taskType.equals("todo")) {
@@ -390,7 +311,6 @@ public class Fishball {
                                             start = start + parse[i] + " ";
                                             i++;
                                         }
-                                        i--;
                                     }
                                     if (parse[i].equals("/to")) {
                                         hasTo = true;
@@ -427,14 +347,10 @@ public class Fishball {
                             }
                             System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
                         }
-                        s.store(record);
-
-
+                        s.store(record.getAll());
                     }
                 } catch (FishballException e) {
                     System.out.println(indent + horiline + indent + "OOPS! Come on fishball! " + e.getMessage() + "\n" + indent + horiline);
-                } catch (NumberFormatException e) {
-                    System.out.println(indent + horiline + indent + "OOPS! Please provide a valid task number.\n" + indent + horiline);
                 }
             }
         }
