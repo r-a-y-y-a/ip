@@ -1,20 +1,17 @@
+import exceptions.EmptyTaskException;
+import exceptions.FishballException;
+import exceptions.InvalidCommandException;
+import exceptions.InvalidIndexException;
+import exceptions.MissingParameterException;
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import tasks.Task;
 import tasks.Deadline;
-import tasks.Todo;
 import tasks.Event;
-
-import exceptions.FishballException;
-import exceptions.EmptyTaskException;
-import exceptions.InvalidIndexException;
-import exceptions.InvalidCommandException;
-import exceptions.MissingParameterException;
+import tasks.Task;
+import tasks.Todo;
 
 class Storage {
     private File f;
@@ -121,21 +118,70 @@ class TaskList {
     }
 }
 
-//public String[] getData()
+class UI {
+    public static final String HORIZONTAL_LINE = "____________________________________________________________\n";
+    public static final String EXIT_MESSAGE = "Bye. Hope to see you again soon!\n";
+    public static final String INDENT = "     ";
+    public static final String WELCOME_MESSAGE = "Hello, I'm Fishball!\n" + INDENT + "What can I do for you?\n";
+
+    public void printWelcome() {
+        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + WELCOME_MESSAGE +
+                INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printExit() {
+        System.out.println(INDENT + HORIZONTAL_LINE +
+                INDENT + EXIT_MESSAGE +
+                INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printList(TaskList record) {
+        System.out.print(INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT + "Here are the tasks in your list:");
+        for (int i = 0; i < record.size(); i++) {
+            System.out.print(INDENT + (i + 1) + ".");
+            System.out.println(record.get(i));
+        }
+        System.out.println(INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printTaskAdded(Task task, int totalTasks) {
+        System.out.println(INDENT + HORIZONTAL_LINE +
+                INDENT + "Got it. I've added this task: \n" +
+                INDENT + "    " + task);
+        System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printTaskDeleted(Task task, int totalTasks) {
+        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "Noted. I've removed this task:\n" + INDENT + "  " + task);
+        System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printTaskMarked(Task task) {
+        System.out.println(INDENT + HORIZONTAL_LINE +
+                INDENT + "Nice! I've marked this task as done\n" +
+                INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printTaskUnmarked(Task task) {
+        System.out.println(INDENT + HORIZONTAL_LINE +
+                INDENT + "Ok, I've marked this task as not done yet\n" +
+                INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
+    }
+
+    public void printError(String message) {
+        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "OOPS! Come on fishball! " + message + "\n" + INDENT + HORIZONTAL_LINE);
+    }
+}
+
 public class Fishball {
-    public static String horiline = "____________________________________________________________\n";
-    public static String exitmsg = "Bye. Hope to see you again soon!\n";
-    public static String indent = "     ";
-    public static void main(String[] args) throws FishballException{
-        //System.out.println(logo);
+    public static void main(String[] args) throws FishballException {
         Storage s = new Storage("../../../data/fishball.txt");
         TaskList record = new TaskList(s.load());
+        UI ui = new UI();
 
-        System.out.println(indent + horiline + indent + "Hello, I'm Fishball!\n");
-        System.out.println(indent + "What can I do for you?\n" + indent + horiline);
+        ui.printWelcome();
         try (Scanner scanner = new Scanner(System.in)) {
-
-
             while (true) {
                 try {
                     String input = scanner.nextLine().trim();
@@ -145,212 +191,154 @@ public class Fishball {
                     String[] parse = input.split(" ");
                     String command = parse[0];
                     Task curr;
+
                     if (command.equals("bye") && parse.length == 1) {
-                        System.out.println(indent + horiline +
-                                indent + exitmsg +
-                                indent + horiline);
+                        ui.printExit();
                         return;
                     }
 
-                    if (command.equals("list")){
-                        if (parse.length != 1){
+                    if (command.equals("list")) {
+                        if (parse.length != 1) {
                             throw new InvalidCommandException("The list command does not take any parameters! Just type 'list' to see your tasks.");
                         }
-                        System.out.print(indent + horiline);
-                        System.out.println(indent + "Here are the tasks in your list:");
-                        for (int i = 0; i < record.size(); i++){
-                            System.out.print(indent + (i+1) + '.');
-                            System.out.println(record.get(i));
-                        }
-                        System.out.println(indent + horiline);
-                    } else if (command.equals("find")){
-                        if (parse.length != 3){
-                            throw new InvalidCommandException("The find command requires a date and time! Use format: find <dd-MM-yyyy> <HHmm>");
+                        ui.printList(record);
+                    } else if (command.equals("delete")) {
+                        if (parse.length != 2) {
+                            throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
                         }
                         try {
-                            LocalDateTime searchDateTime = LocalDateTime.parse(parse[1] + " " + parse[2], DateTimeFormatter.ofPattern("dd-MM-yyyy HHmm"));
-                            System.out.print(indent + horiline);
-                            System.out.println(indent + "Tasks on " + searchDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm")) + ":");
-                            boolean found = false;
-                            for (int i = 0; i < record.size(); i++){
-                                Task t = record.get(i);
-                                boolean matches = false;
-                                if (t.getType().equals("d")){
-                                    Deadline d = (Deadline) t;
-                                    if (d.getDeadline().equals(searchDateTime)) matches = true;
-                                } else if (t.getType().equals("e")) {
-                                    Event e = (Event) t;
-                                    if ((e.getStart().equals(searchDateTime) || e.getEnd().equals(searchDateTime)) ||
-                                            (e.getStart().isBefore(searchDateTime) && e.getEnd().isAfter(searchDateTime))) {
-                                        matches = true;
-                                    }
-                                }
-                                if (matches) {
-                                    System.out.print(indent + (i+1) + '.');
-                                    System.out.println(record.get(i));
-                                    found = true;
-                                }
+                            int index = Integer.parseInt(parse[1].trim()) - 1;
+                            if (index < 0 || index >= record.size()) {
+                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
                             }
-                            if (!found) {
-                                System.out.println(indent + "No tasks found for this date/time.");
+                            Task delete = record.get(index);
+                            record.remove(index);
+                            ui.printTaskDeleted(delete, record.size());
+                        } catch (NumberFormatException e) {
+                            throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                        }
+                    } else if (command.equals("mark") && parse.length == 2) {
+                        try {
+                            int index = Integer.parseInt(parse[1]) - 1;
+                            if (index < 0 || index >= record.size()) {
+                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
                             }
-                            System.out.println(indent + horiline);
-                        } catch (DateTimeParseException e) {
-                            throw new InvalidCommandException("Invalid date/time format! Use: find <dd-MM-yyyy> <HHmm>");
+                            record.get(index).mark();
+                            ui.printTaskMarked(record.get(index));
+                        } catch (NumberFormatException e) {
+                            throw new MissingParameterException("Please provide a valid task number.");
+                        }
+                    } else if (command.equals("unmark") && parse.length == 2) {
+                        try {
+                            int index = Integer.parseInt(parse[1]) - 1;
+                            if (index < 0 || index >= record.size()) {
+                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                            }
+                            record.get(index).unmark();
+                            ui.printTaskUnmarked(record.get(index));
+                        } catch (NumberFormatException e) {
+                            throw new MissingParameterException("Please provide a valid task number.");
                         }
                     } else {
-                        if (command.equals("delete")) {
-                            if (parse.length != 2) {
-                                throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
-                            } else {
-                                try {
-                                    int index = Integer.parseInt(parse[1].trim()) - 1;
-                                    if (index < 0 || index >= record.size()) {
-                                        throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                        String taskType = parse[0];
+                        if (taskType.equals("todo")) {
+                            String task = "";
+                            for (int i = 1; i < parse.length; i++) {
+                                task = task + parse[i] + " ";
+                            }
+                            task = task.trim();
+                            if (task.isEmpty()) {
+                                throw new EmptyTaskException("The description of a todo cannot be empty!");
+                            }
+                            curr = new Todo(task, false);
+                            record.add(curr);
+                            ui.printTaskAdded(curr, record.size());
+                        } else if (taskType.equals("deadline")) {
+                            String task = "";
+                            String deadline = "";
+                            boolean hasBy = false;
+                            for (int i = 1; i < parse.length; i++) {
+                                if (parse[i].equals("/by")) {
+                                    hasBy = true;
+                                    for (int j = i + 1; j < parse.length; j++) {
+                                        if (j == parse.length - 1) {
+                                            deadline = deadline + parse[j];
+                                            break;
+                                        }
+                                        deadline = deadline + parse[j] + " ";
                                     }
-                                    Task delete = record.get(index);
-                                    record.remove(index);
-                                    System.out.println(indent + horiline + indent + "Noted. I've removed this task:\n" + indent + "  " + delete);
-                                    System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
-                                } catch (NumberFormatException e) {
-                                    throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                                    break;
                                 }
+                                task = task + parse[i] + " ";
                             }
-                        } else if (command.equals("mark") && parse.length == 2) {
-                            try {
-                                int index = Integer.parseInt(parse[1]) - 1;
-                                if (index < 0 || index >= record.size()) {
-                                    throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
-                                }
-                                record.get(index).mark();
-                                System.out.println(indent + horiline +
-                                        indent + "Nice! I've marked this task as done\n" +
-                                        indent + record.get(index) + '\n' + indent + horiline);
-                            } catch (NumberFormatException e) {
-                                throw new MissingParameterException("Please provide a valid task number.");
+                            task = task.trim();
+                            deadline = deadline.trim();
+                            if (task.isEmpty() || !hasBy || deadline.isEmpty()) {
+                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm>");
                             }
-
-                        } else if (command.equals("unmark") && parse.length == 2) {
                             try {
-                                int index = Integer.parseInt(parse[1]) - 1;
-                                if (index < 0 || index >= record.size()) {
-                                    throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                LocalDateTime deadlineDate = Deadline.parseDate(deadline);
+                                curr = new Deadline(task, false, deadlineDate);
+                                record.add(curr);
+                                ui.printTaskAdded(curr, record.size());
+                            } catch (DateTimeParseException e) {
+                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
+                            }
+                        } else if (taskType.equals("event")) {
+                            String task = "";
+                            String start = "";
+                            String end = "";
+                            boolean hasFrom = false;
+                            boolean hasTo = false;
+                            for (int i = 1; i < parse.length; i++) {
+                                if (parse[i].equals("/from")) {
+                                    hasFrom = true;
+                                    i++;
+                                    while (i < parse.length && !parse[i].equals("/to")) {
+                                        if (i == parse.length - 1 || (i + 1 < parse.length && parse[i + 1].equals("/to"))) {
+                                            start = start + parse[i];
+                                            i++;
+                                            break;
+                                        }
+                                        start = start + parse[i] + " ";
+                                        i++;
+                                    }
                                 }
-                                record.get(index).unmark();
-                                System.out.println(indent + horiline +
-                                        indent + "Ok, I've marked this task as not done yet\n" +
-                                        indent + record.get(index) + '\n' + indent + horiline);
-                            } catch (NumberFormatException e) {
-                                throw new MissingParameterException("Please provide a valid task number.");
+                                if (parse[i].equals("/to")) {
+                                    hasTo = true;
+                                    for (int j = i + 1; j < parse.length; j++) {
+                                        if (j == parse.length - 1) {
+                                            end = end + parse[j];
+                                            break;
+                                        }
+                                        end = end + parse[j] + " ";
+                                    }
+                                    break;
+                                }
+                                task = task + parse[i] + " ";
+                            }
+                            task = task.trim();
+                            start = start.trim();
+                            end = end.trim();
+                            if (task.isEmpty() || !hasFrom || start.isEmpty() || !hasTo || end.isEmpty()) {
+                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm>");
+                            }
+                            try {
+                                LocalDateTime startDate = Event.parseDate(start);
+                                LocalDateTime endDate = Event.parseDate(end);
+                                curr = new Event(task, false, startDate, endDate);
+                                record.add(curr);
+                                ui.printTaskAdded(curr, record.size());
+                            } catch (DateTimeParseException e) {
+                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
                             }
                         } else {
-                            String taskType = parse[0];
-                            if (taskType.equals("todo")) {
-                                String task = "";
-                                for (int i = 1; i < parse.length; i++) {
-                                    task = task + parse[i] + " ";
-                                }
-                                task = task.trim();
-                                if (task.isEmpty()) {
-                                    throw new EmptyTaskException("The description of a todo cannot be empty!");
-                                }
-                                curr = new Todo(task, false);
-                                record.add(curr);
-                                System.out.println(indent + horiline +
-                                        indent + "Got it. I've added this task: \n" +
-                                        indent + "    " + curr);
-                            } else if (taskType.equals("deadline")) {
-                                String task = "";
-                                String deadline = "";
-                                boolean hasBy = false;
-                                for (int i = 1; i < parse.length; i++) {
-                                    if (parse[i].equals("/by")) {
-                                        hasBy = true;
-                                        for (int j = i + 1; j < parse.length; j++) {
-                                            if (j == parse.length - 1) {
-                                                deadline = deadline + parse[j];
-                                                break;
-                                            }
-                                            deadline = deadline + parse[j] + " ";
-                                        }
-                                        break;
-                                    }
-                                    task = task + parse[i] + " ";
-                                }
-                                task = task.trim();
-                                deadline = deadline.trim();
-                                if (task.isEmpty() || !hasBy || deadline.isEmpty()) {
-                                    throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm>");
-                                }
-                                try {
-                                    LocalDateTime deadlineDate = Deadline.parseDate(deadline);
-                                    curr = new Deadline(task, false, deadlineDate);
-                                    record.add(curr);
-                                    System.out.println(indent + horiline +
-                                            indent + "Got it. I've added this task: \n" +
-                                            indent + "    " + curr);
-                                } catch (DateTimeParseException e) {
-                                    throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
-                                }
-                            } else if (taskType.equals("event")) {
-                                String task = "";
-                                String start = "";
-                                String end = "";
-                                boolean hasFrom = false;
-                                boolean hasTo = false;
-                                for (int i = 1; i < parse.length; i++) {
-                                    if (parse[i].equals("/from")) {
-                                        hasFrom = true;
-                                        i++;
-                                        while (i < parse.length && !parse[i].equals("/to")) {
-                                            if (i == parse.length - 1 || (i + 1 < parse.length && parse[i + 1].equals("/to"))) {
-                                                start = start + parse[i];
-                                                i++;
-                                                break;
-                                            }
-                                            start = start + parse[i] + " ";
-                                            i++;
-                                        }
-                                    }
-                                    if (parse[i].equals("/to")) {
-                                        hasTo = true;
-                                        for (int j = i + 1; j < parse.length; j++) {
-                                            if (j == parse.length - 1) {
-                                                end = end + parse[j];
-                                                break;
-                                            }
-                                            end = end + parse[j] + " ";
-                                        }
-                                        break;
-                                    }
-                                    task = task + parse[i] + " ";
-                                }
-                                task = task.trim();
-                                start = start.trim();
-                                end = end.trim();
-                                if (task.isEmpty() || !hasFrom || start.isEmpty() || !hasTo || end.isEmpty()) {
-                                    throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm>");
-                                }
-                                try {
-                                    LocalDateTime startDate = Event.parseDate(start);
-                                    LocalDateTime endDate = Event.parseDate(end);
-                                    curr = new Event(task, false, startDate, endDate);
-                                    record.add(curr);
-                                    System.out.println(indent + horiline +
-                                            indent + "Got it. I've added this task: \n" +
-                                            indent + "    " + curr);
-                                } catch (DateTimeParseException e) {
-                                    throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
-                                }
-                            } else {
-                                throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, find, mark, unmark, or bye.");
-                            }
-                            System.out.println(indent + "Now you have " + record.size() + " tasks in the list.\n" + indent + horiline);
+                            throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, find, mark, unmark, or bye.");
                         }
                         s.store(record.getAll());
                     }
                 } catch (FishballException e) {
-                    System.out.println(indent + horiline + indent + "OOPS! Come on fishball! " + e.getMessage() + "\n" + indent + horiline);
+                    ui.printError(e.getMessage());
                 }
             }
         }
