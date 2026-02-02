@@ -12,24 +12,42 @@ import tasks.Event;
 import tasks.Task;
 import tasks.Todo;
 
-
+/**
+ * UI is responsible for handling all user interface operations including displaying messages
+ * and processing user input for the Fishball task management application.
+ * It manages the display of tasks, confirmations, errors, and coordinates command execution.
+ *
+ * @author r-a-y-y-a
+ * @version 1.0
+ */
 public class UI {
     public static final String HORIZONTAL_LINE = "____________________________________________________________\n";
     public static final String EXIT_MESSAGE = "Bye. Hope to see you again soon!\n";
     public static final String INDENT = "     ";
     public static final String WELCOME_MESSAGE = "Hello, I'm Fishball!\n" + INDENT + "What can I do for you?\n";
 
+    /**
+     * Displays the welcome message when the application starts.
+     */
     public void printWelcome() {
         System.out.println(INDENT + HORIZONTAL_LINE + INDENT + WELCOME_MESSAGE +
                 INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays the exit message when the application terminates.
+     */
     public void printExit() {
         System.out.println(INDENT + HORIZONTAL_LINE +
                 INDENT + EXIT_MESSAGE +
                 INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays all tasks in the provided task list.
+     *
+     * @param record the TaskList to be displayed
+     */
     public void printList(TaskList record) {
         System.out.print(INDENT + HORIZONTAL_LINE);
         System.out.println(INDENT + "Here are the tasks in your list:");
@@ -40,6 +58,12 @@ public class UI {
         System.out.println(INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays a confirmation message when a task is successfully added.
+     *
+     * @param task the task that was added
+     * @param totalTasks the total number of tasks after addition
+     */
     public void printTaskAdded(Task task, int totalTasks) {
         System.out.println(INDENT + HORIZONTAL_LINE +
                 INDENT + "Got it. I've added this task: \n" +
@@ -47,27 +71,57 @@ public class UI {
         System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays a confirmation message when a task is successfully deleted.
+     *
+     * @param task the task that was deleted
+     * @param totalTasks the total number of tasks after deletion
+     */
+
     public void printTaskDeleted(Task task, int totalTasks) {
         System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "Noted. I've removed this task:\n" + INDENT + "  " + task);
         System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays a confirmation message when a task is marked as completed.
+     *
+     * @param task the task that was marked as done
+     */
     public void printTaskMarked(Task task) {
         System.out.println(INDENT + HORIZONTAL_LINE +
                 INDENT + "Nice! I've marked this task as done\n" +
                 INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays a confirmation message when a task is marked as not completed.
+     *
+     * @param task the task that was marked as not done
+     */
     public void printTaskUnmarked(Task task) {
         System.out.println(INDENT + HORIZONTAL_LINE +
                 INDENT + "Ok, I've marked this task as not done yet\n" +
                 INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Displays an error message to the user.
+     *
+     * @param message the error message to be displayed
+     */
     public void printError(String message) {
         System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "OOPS! Come on fishball! " + message + "\n" + INDENT + HORIZONTAL_LINE);
     }
 
+    /**
+     * Handles user input in a loop, processing commands and updating tasks accordingly.
+     * Supports commands: list, delete, mark, unmark, todo, deadline, event, and bye.
+     *
+     * @param record the TaskList to be modified by user commands
+     * @param storage the Storage instance for persisting changes
+     * @throws FishballException if an error occurs during input processing
+     */
     public void handleInput(TaskList record, Storage storage) throws FishballException {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {

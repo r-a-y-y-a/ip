@@ -18,10 +18,22 @@ import tasks.Event;
 import tasks.Task;
 import tasks.Todo;
 
-
+/**
+ * Storage is responsible for persisting and loading task data from a file.
+ * It handles file creation, reading task data from disk, and writing updated tasks back to storage.
+ *
+ * @author r-a-y-y-a
+ * @version 1.0
+ */
 public class Storage {
     private File f;
 
+    /**
+     * Constructs a Storage instance and initializes the file for data persistence.
+     * Creates the file and its parent directories if they do not exist.
+     *
+     * @param filepath the path to the file where tasks will be stored
+     */
     public Storage(String filepath){
         try {
             this.f = new File(filepath);
@@ -37,6 +49,12 @@ public class Storage {
         }
     }
 
+    /**
+     * Loads tasks from the storage file.
+     * Parses the file and reconstructs Task objects (Todo, Deadline, Event) from stored data.
+     *
+     * @return an ArrayList of tasks loaded from the file
+     */
     public ArrayList<Task> load(){
         ArrayList<Task> record = new ArrayList<>();
         try (Scanner s = new Scanner(f)) {
@@ -60,6 +78,12 @@ public class Storage {
         return record;
     }
 
+    /**
+     * Persists the provided tasks to the storage file.
+     * Serializes each task with its type, description, completion status, and date information.
+     *
+     * @param updatedTasks the list of tasks to be saved to storage
+     */
     public void store(ArrayList<Task> updatedTasks) {
         String line;
         // Update tasks list
