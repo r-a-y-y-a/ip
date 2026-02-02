@@ -7,6 +7,8 @@ import exceptions.MissingParameterException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
@@ -36,6 +38,29 @@ public class UI {
         for (int i = 0; i < record.size(); i++) {
             System.out.print(INDENT + (i + 1) + ".");
             System.out.println(record.get(i));
+        }
+        System.out.println(INDENT + HORIZONTAL_LINE);
+    }
+
+    /**
+     * Finds and displays tasks whose descriptions contain the given keyword as a whole word.
+     * Matching is case-insensitive; substrings inside other words are not considered matches.
+     * Example: keyword "sub" matches "find a sub for james" but not "subway".
+     *
+     * @param keyword the keyword to search for (single word)
+     * @param record the TaskList to search
+     */
+    public void find(String keyword, TaskList record) {
+        System.out.print(INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT + "Here are the matching tasks in your list:");
+        for (int i = 0; i < record.size(); i++) {
+            Task t = record.get(i);
+            String[] desc = t.getTask().split(" ");
+            if (java.util.Arrays.asList(desc).contains(keyword)) {
+                System.out.print(INDENT + " " + (i + 1) + ".");
+                System.out.println(t);
+                continue;
+            }
         }
         System.out.println(INDENT + HORIZONTAL_LINE);
     }
@@ -90,6 +115,12 @@ public class UI {
                             throw new InvalidCommandException("The list command does not take any parameters! Just type 'list' to see your tasks.");
                         }
                         printList(record);
+                    } else if (command.equals("find")) {
+                        if (parse.length < 2) {
+                            throw new MissingParameterException("Please provide a keyword in the format: find <keyword>");
+                        }
+                        String keyword = parse[1];
+                        find(keyword, record);
                     } else if (command.equals("delete")) {
                         if (parse.length != 2) {
                             throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
