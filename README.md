@@ -155,18 +155,11 @@ Use this example as a starting template for your PR description. It demonstrates
 ./gradlew run
 ```
 
-#### Checklist
+#### Upcoming features
 
-- [x] Heading
-- [x] A bullet list explaining the change
-- [x] A numbered list describing why the change was made
-- [x] A fenced code block showing how to run tests and run the app
-- [x] A task list describing work items
-- [x] An emoji to add a friendly touch :sparkles:
-- [x] A blockquote with a short inspirational quote
-- [x] A hyperlink to an external resource
-- [x] Inline code examples such as `find <keyword>` and `./gradlew test`
-- [x] Text formatting: **bold**, *italic*, ~~strikethrough~~
+- [X] 'find' command to find specific tasks - pull up relevant tasks in an instant! 
+- [ ] GUI (desktop graphical user interface) — provide a visual way to manage tasks.
+- [ ] Text-to-speech support — read tasks aloud and provide spoken notifications.
 
 > "Your mind is for having ideas, not holding them." — David Allen (source)
 
@@ -189,3 +182,7 @@ find book
 
 - The `find` implementation in this project matches whole words only (uses regex word boundaries). For multi-word phrases, use quotes in the command or extend parsing accordingly.
 - If you want case-sensitive matching, update the `UI.find` method accordingly.
+
+---
+
+If you want this PR template to be added as a GitHub PR template file (e.g. `.github/pull_request_template.md`), I can add it for you.
