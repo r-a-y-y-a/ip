@@ -1,12 +1,13 @@
 package utils;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Scanner;
+
 import exceptions.EmptyTaskException;
 import exceptions.FishballException;
 import exceptions.InvalidCommandException;
 import exceptions.InvalidIndexException;
 import exceptions.MissingParameterException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.Scanner;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
@@ -30,17 +31,24 @@ public class UI {
      * Displays the welcome message when the application starts.
      */
     public void printWelcome() {
-        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + WELCOME_MESSAGE +
-                INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + WELCOME_MESSAGE
+                + INDENT
+                + HORIZONTAL_LINE);
     }
 
     /**
      * Displays the exit message when the application terminates.
      */
     public void printExit() {
-        System.out.println(INDENT + HORIZONTAL_LINE +
-                INDENT + EXIT_MESSAGE +
-                INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + EXIT_MESSAGE
+                + INDENT
+                + HORIZONTAL_LINE);
     }
 
     /**
@@ -59,15 +67,42 @@ public class UI {
     }
 
     /**
+     * Finds and displays tasks whose descriptions contain the given keyword as a whole word.
+     * Matching is case-insensitive; substrings inside other words are not considered matches.
+     * Example: keyword "sub" matches "find a sub for james" but not "subway".
+     *
+     * @param keyword the keyword to search for (single word)
+     * @param record the TaskList to search
+     */
+    public void find(String keyword, TaskList record) {
+        System.out.print(INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT + "Here are the matching tasks in your list:");
+        for (int i = 0; i < record.size(); i++) {
+            Task t = record.get(i);
+            String[] desc = t.getTask().split(" ");
+            if (java.util.Arrays.asList(desc).contains(keyword)) {
+                System.out.print(INDENT + " " + (i + 1) + ".");
+                System.out.println(t);
+                continue;
+            }
+        }
+        System.out.println(INDENT + HORIZONTAL_LINE);
+    }
+
+    /**
      * Displays a confirmation message when a task is successfully added.
      *
      * @param task the task that was added
      * @param totalTasks the total number of tasks after addition
      */
     public void printTaskAdded(Task task, int totalTasks) {
-        System.out.println(INDENT + HORIZONTAL_LINE +
-                INDENT + "Got it. I've added this task: \n" +
-                INDENT + "    " + task);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + "Got it. I've added this task: \n"
+                + INDENT
+                + "    "
+                + task);
         System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
     }
 
@@ -79,7 +114,10 @@ public class UI {
      */
 
     public void printTaskDeleted(Task task, int totalTasks) {
-        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "Noted. I've removed this task:\n" + INDENT + "  " + task);
+        System.out.println(INDENT + HORIZONTAL_LINE + INDENT
+                + "Noted. I've removed this task:\n"
+                + INDENT
+                + "  " + task);
         System.out.println(INDENT + "Now you have " + totalTasks + " tasks in the list.\n" + INDENT + HORIZONTAL_LINE);
     }
 
@@ -89,9 +127,15 @@ public class UI {
      * @param task the task that was marked as done
      */
     public void printTaskMarked(Task task) {
-        System.out.println(INDENT + HORIZONTAL_LINE +
-                INDENT + "Nice! I've marked this task as done\n" +
-                INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + "Nice! I've marked this task as done\n"
+                + INDENT
+                + task
+                + '\n'
+                + INDENT
+                + HORIZONTAL_LINE);
     }
 
     /**
@@ -100,9 +144,15 @@ public class UI {
      * @param task the task that was marked as not done
      */
     public void printTaskUnmarked(Task task) {
-        System.out.println(INDENT + HORIZONTAL_LINE +
-                INDENT + "Ok, I've marked this task as not done yet\n" +
-                INDENT + task + '\n' + INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + "Ok, I've marked this task as not done yet\n"
+                + INDENT
+                + task
+                + '\n'
+                + INDENT
+                + HORIZONTAL_LINE);
     }
 
     /**
@@ -111,7 +161,14 @@ public class UI {
      * @param message the error message to be displayed
      */
     public void printError(String message) {
-        System.out.println(INDENT + HORIZONTAL_LINE + INDENT + "OOPS! Come on fishball! " + message + "\n" + INDENT + HORIZONTAL_LINE);
+        System.out.println(INDENT
+                + HORIZONTAL_LINE
+                + INDENT
+                + "OOPS! Come on fishball! "
+                + message
+                + "\n"
+                + INDENT
+                + HORIZONTAL_LINE);
     }
 
     /**
@@ -128,7 +185,8 @@ public class UI {
                 try {
                     String input = scanner.nextLine().trim();
                     if (input.isEmpty()) {
-                        throw new InvalidCommandException("This is an empty input! Please enter a command!");
+                        throw new InvalidCommandException(
+                                "This is an empty input! Please enter a command!");
                     }
                     String[] parse = input.split(" ");
                     String command = parse[0];
@@ -141,29 +199,42 @@ public class UI {
 
                     if (command.equals("list")) {
                         if (parse.length != 1) {
-                            throw new InvalidCommandException("The list command does not take any parameters! Just type 'list' to see your tasks.");
+                            throw new InvalidCommandException(
+                                    "The list command does not take any parameters! "
+                                            + "Just type 'list' to see your tasks.");
                         }
                         printList(record);
+                    } else if (command.equals("find")) {
+                        if (parse.length < 2) {
+                            throw new MissingParameterException(
+                                    "Please provide a keyword in the format: find <keyword>");
+                        }
+                        String keyword = parse[1];
+                        find(keyword, record);
                     } else if (command.equals("delete")) {
                         if (parse.length != 2) {
-                            throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                            throw new MissingParameterException(
+                                    "Please provide a delete in the format: delete <task number>");
                         }
                         try {
                             int index = Integer.parseInt(parse[1].trim()) - 1;
                             if (index < 0 || index >= record.size()) {
-                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                throw new InvalidIndexException(
+                                        "Task number is out of range! Please provide a valid task number");
                             }
                             Task delete = record.get(index);
                             record.remove(index);
                             printTaskDeleted(delete, record.size());
                         } catch (NumberFormatException e) {
-                            throw new MissingParameterException("Please provide a delete in the format: delete <task number>");
+                            throw new MissingParameterException(
+                                    "Please provide a delete in the format: delete <task number>");
                         }
                     } else if (command.equals("mark") && parse.length == 2) {
                         try {
                             int index = Integer.parseInt(parse[1]) - 1;
                             if (index < 0 || index >= record.size()) {
-                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                throw new InvalidIndexException(
+                                        "Task number is out of range! Please provide a valid task number.");
                             }
                             record.get(index).mark();
                             printTaskMarked(record.get(index));
@@ -174,7 +245,8 @@ public class UI {
                         try {
                             int index = Integer.parseInt(parse[1]) - 1;
                             if (index < 0 || index >= record.size()) {
-                                throw new InvalidIndexException("Task number is out of range! Please provide a valid task number.");
+                                throw new InvalidIndexException(
+                                        "Task number is out of range! Please provide a valid task number.");
                             }
                             record.get(index).unmark();
                             printTaskUnmarked(record.get(index));
@@ -190,7 +262,8 @@ public class UI {
                             }
                             task = task.trim();
                             if (task.isEmpty()) {
-                                throw new EmptyTaskException("The description of a todo cannot be empty!");
+                                throw new EmptyTaskException(
+                                        "The description of a todo cannot be empty!");
                             }
                             curr = new Todo(task, false);
                             record.add(curr);
@@ -216,7 +289,9 @@ public class UI {
                             task = task.trim();
                             deadline = deadline.trim();
                             if (task.isEmpty() || !hasBy || deadline.isEmpty()) {
-                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm>");
+                                throw new MissingParameterException(
+                                        "Please provide a deadline in the format: "
+                                                + "deadline <task> /by <dd-MM-yyyy HHmm>");
                             }
                             try {
                                 LocalDateTime deadlineDate = Deadline.parseDate(deadline);
@@ -224,7 +299,9 @@ public class UI {
                                 record.add(curr);
                                 printTaskAdded(curr, record.size());
                             } catch (DateTimeParseException e) {
-                                throw new MissingParameterException("Please provide a deadline in the format: deadline <task> /by <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
+                                throw new MissingParameterException(
+                                        "Please provide a deadline in the format: "
+                                                + "deadline <task> /by <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
                             }
                         } else if (taskType.equals("event")) {
                             String task = "";
@@ -237,7 +314,8 @@ public class UI {
                                     hasFrom = true;
                                     i++;
                                     while (i < parse.length && !parse[i].equals("/to")) {
-                                        if (i == parse.length - 1 || (i + 1 < parse.length && parse[i + 1].equals("/to"))) {
+                                        if (i == parse.length - 1
+                                                || (i + 1 < parse.length && parse[i + 1].equals("/to"))) {
                                             start = start + parse[i];
                                             i++;
                                             break;
@@ -263,7 +341,9 @@ public class UI {
                             start = start.trim();
                             end = end.trim();
                             if (task.isEmpty() || !hasFrom || start.isEmpty() || !hasTo || end.isEmpty()) {
-                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm>");
+                                throw new MissingParameterException(
+                                        "Please provide an event in the format: "
+                                                + "event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm>");
                             }
                             try {
                                 LocalDateTime startDate = Event.parseDate(start);
@@ -272,10 +352,15 @@ public class UI {
                                 record.add(curr);
                                 printTaskAdded(curr, record.size());
                             } catch (DateTimeParseException e) {
-                                throw new MissingParameterException("Please provide an event in the format: event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm> (e.g., 2019-10-15 1400)");
+                                throw new MissingParameterException(
+                                        "Please provide an event in the format: "
+                                                + "event <task> /from <dd-MM-yyyy HHmm> /to <dd-MM-yyyy HHmm> "
+                                                + "(e.g., 2019-10-15 1400)");
                             }
                         } else {
-                            throw new InvalidCommandException("I don't recognize that command. Please use: todo, deadline, event, list, find, mark, unmark, or bye.");
+                            throw new InvalidCommandException(
+                                    "I don't recognize that command. Please use: "
+                                            + "todo, deadline, event, list, find, mark, unmark, or bye.");
                         }
                     }
                     storage.store(record.getAll());
