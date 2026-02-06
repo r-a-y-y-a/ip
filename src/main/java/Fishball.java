@@ -16,6 +16,7 @@ public class Fishball {
     private String filepath;
     private Storage storage;
     private TaskList taskList;
+    private boolean isRunning;
 
     /**
      * Constructs a Fishball instance with the specified file path for data persistence.
@@ -27,6 +28,7 @@ public class Fishball {
         this.filepath = filepath;
         this.storage = new Storage(filepath);
         this.taskList = new TaskList(storage.load());
+        this.isRunning = true;
     }
 
     /**
@@ -49,8 +51,8 @@ public class Fishball {
      * Displays a welcome message and begins processing user input through the console UI.
      *
      * @throws FishballException if an error occurs during execution
-     */
-    /*public void run() throws FishballException {
+     *
+    public void run() throws FishballException {
         UI ui = new UI();
         ui.printWelcome();
         ui.handleInput(taskList, storage);
@@ -78,13 +80,27 @@ public class Fishball {
      * Processes a single user command and returns a response message.
      * This method delegates to the UI's processCommand method, which handles
      * all command parsing, execution, and storage updates.
+     * If the command is "bye", sets isRunning to false.
      *
      * @param input the user's command input
      * @return a message describing the result of the command
      */
     public String getResponse(String input) {
+        if (input.trim().equals("bye")) {
+            isRunning = false;
+        }
         UI ui = new UI();
         return ui.processCommand(input, taskList, storage);
+    }
+
+    /**
+     * Checks if the application should continue running.
+     * Returns false after the bye command is executed.
+     *
+     * @return true if the application should keep running, false if it should exit
+     */
+    public boolean isRunning() {
+        return isRunning;
     }
 
     /**

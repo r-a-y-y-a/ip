@@ -5,6 +5,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.application.Platform;
+import javafx.stage.Stage;
 
 /**
  * MainWindow is the FXML controller for the main GUI window of the Fishball chatbot.
@@ -39,6 +41,9 @@ public class MainWindow extends AnchorPane {
     /** Reference to the Fishball chatbot instance. */
     private Fishball fishball;
 
+    /** Reference to the primary stage for closing the window. */
+    private Stage stage;
+
     /** Image displayed for user messages in the dialog. */
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/user.jpg"));
 
@@ -66,6 +71,16 @@ public class MainWindow extends AnchorPane {
     }
 
     /**
+     * Sets the primary stage reference for the GUI.
+     * Used to close the window when the bye command is executed.
+     *
+     * @param s the primary Stage
+     */
+    public void setStage(Stage s) {
+        stage = s;
+    }
+
+    /**
      * Handles user input by processing it through the Fishball chatbot
      * and displaying both the user message and the bot response as DialogBox components.
      *
@@ -75,6 +90,7 @@ public class MainWindow extends AnchorPane {
      * - Creates dialog boxes for both user input and bot response
      * - Appends them to the dialog container
      * - Clears the input field
+     * - Checks if the application should close (bye command) and closes the stage if needed
      *
      * This method is triggered by the FXML sendButton click event.
      */
@@ -87,5 +103,10 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getDukeDialog(response, fishballImage)
         );
         userInput.clear();
+
+        // Close the window if the bye command was executed
+        if (!fishball.isRunning()) {
+            Platform.exit();
+        }
     }
 }
