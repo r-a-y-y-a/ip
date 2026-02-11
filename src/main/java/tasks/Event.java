@@ -71,8 +71,8 @@ public class Event extends Task {
         } else {
             out = out + "[ ]";
         }
-        out = out + " " + this.getTask() + "(from: " + this.start.format(OUTPUT_FORMATTER)
-                + " to: " + this.end.format(OUTPUT_FORMATTER) + ")";
+        out = out + " " + this.getTask() + "(from: " + this.start.format(OUTPUT_FORMATTER) + "hrs"
+                + " to: " + this.end.format(OUTPUT_FORMATTER) + "hrs)";
         return out;
     }
 }

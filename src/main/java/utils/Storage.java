@@ -39,7 +39,8 @@ public class Storage {
                 f.createNewFile();
             }
         } catch (IOException e) {
-            System.out.println("Error");
+            System.err.println("Failed to initialize storage file: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -69,7 +70,8 @@ public class Storage {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error");
+            System.err.println("Failed to read storage file: " + e.getMessage());
+            e.printStackTrace();
         }
         return record;
     }
@@ -101,7 +103,8 @@ public class Storage {
             }
             fw.flush();
         } catch (IOException e) {
-            System.out.println("Exception writing to file");
+            System.err.println("Exception writing to storage file: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

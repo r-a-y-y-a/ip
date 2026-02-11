@@ -46,17 +46,6 @@ public class Fishball {
         ui.handleInput(record, storage);
     }
 
-    /**
-     * Runs the Fishball application in CLI mode.
-     * Displays a welcome message and begins processing user input through the console UI.
-     *
-     * @throws FishballException if an error occurs during execution
-     *
-    public void run() throws FishballException {
-        UI ui = new UI();
-        ui.printWelcome();
-        ui.handleInput(taskList, storage);
-    }*/
 
     /**
      * Retrieves the TaskList for direct access (used by GUI).

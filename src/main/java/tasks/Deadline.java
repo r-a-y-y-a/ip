@@ -59,7 +59,7 @@ public class Deadline extends Task {
         } else {
             out = out + "[ ]";
         }
-        out = out + " " + this.getTask() + "(by: " + deadline.format(OUTPUT_FORMATTER) + ")";
+        out = out + " " + this.getTask() + "(by: " + deadline.format(OUTPUT_FORMATTER) + "hrs)";
         return out;
     }
 }
