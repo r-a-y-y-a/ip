@@ -21,6 +21,7 @@ public class TaskList {
      */
     public TaskList() {
         this.tasks = new ArrayList<>();
+        assert this.tasks != null : "tasks list must be initialized";
     }
 
     /**
@@ -29,6 +30,7 @@ public class TaskList {
      * @param tasks the initial collection of tasks
      */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "tasks parameter must not be null";
         this.tasks = tasks;
     }
 
@@ -38,6 +40,7 @@ public class TaskList {
      * @param task the task to be added
      */
     public void add(Task task) {
+        assert task != null : "task to add must not be null";
         this.tasks.add(task);
     }
 
@@ -48,6 +51,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public void remove(int index) {
+        assert index >= 0 && index < this.tasks.size() : "remove index out of range";
         this.tasks.remove(index);
     }
 
@@ -59,6 +63,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public Task get(int index) {
+        assert index >= 0 && index < this.tasks.size() : "get index out of range";
         return this.tasks.get(index);
     }
 
@@ -68,6 +73,7 @@ public class TaskList {
      * @return the size of the task list
      */
     public int size() {
+        assert this.tasks != null : "tasks list must not be null";
         return this.tasks.size();
     }
 
@@ -77,6 +83,7 @@ public class TaskList {
      * @return the list of all tasks
      */
     public ArrayList<Task> getAll() {
+        assert this.tasks != null : "tasks list must not be null";
         return this.tasks;
     }
 
@@ -86,6 +93,7 @@ public class TaskList {
      * @return a formatted string representation of all tasks
      */
     public String toString() {
+        assert this.tasks != null : "tasks list must not be null";
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < tasks.size(); i++) {
             out.append(i + 1).append(".").append(tasks.get(i).toString()).append("\n");
@@ -100,10 +108,12 @@ public class TaskList {
      * @return an ArrayList of upcoming tasks within the next 7 days
      */
     public ArrayList<Task> getUpcomingWithinWeek() {
+        assert this.tasks != null : "tasks list must not be null";
         ArrayList<Task> upcoming = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime limit = now.plusDays(7);
         for (Task t : this.tasks) {
+            assert t != null : "task in list must not be null";
             if (t.isDone()) {
                 continue;
             }

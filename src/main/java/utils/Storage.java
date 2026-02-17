@@ -29,8 +29,10 @@ public class Storage {
      * @param filepath the path to the file where tasks will be stored
      */
     public Storage(String filepath) {
+        assert filepath != null : "Storage filepath must not be null";
         try {
             this.f = new File(filepath);
+            assert this.f != null : "Storage file object creation failed";
             File directory = f.getParentFile();
             if (directory != null && !directory.exists()) {
                 directory.mkdirs();
@@ -51,21 +53,25 @@ public class Storage {
      * @return an ArrayList of tasks loaded from the file
      */
     public ArrayList<Task> load() {
+        assert f != null : "Storage file is not initialized";
         ArrayList<Task> record = new ArrayList<>();
         try (Scanner s = new Scanner(f)) {
             while (s.hasNext()) {
                 String[] parse = s.nextLine().split(",");
                 String type = parse[0];
                 if (type.equals("d")) {
+                    assert parse.length >= 4 : "Malformed deadline entry in storage";
                     LocalDateTime deadlineDate = LocalDateTime.parse(parse[3]);
                     record.add(new Deadline(parse[1],
                             Boolean.parseBoolean(parse[2]), deadlineDate));
                 } else if (type.equals("e")) {
+                    assert parse.length >= 5 : "Malformed event entry in storage";
                     LocalDateTime startDate = LocalDateTime.parse(parse[3]);
                     LocalDateTime endDate = LocalDateTime.parse(parse[4]);
                     record.add(new Event(parse[1],
                             Boolean.parseBoolean(parse[2]), startDate, endDate));
                 } else {
+                    assert parse.length >= 3 : "Malformed todo entry in storage";
                     record.add(new Todo(parse[1], Boolean.parseBoolean(parse[2])));
                 }
             }
@@ -83,11 +89,13 @@ public class Storage {
      * @param updatedTasks the list of tasks to be saved to storage
      */
     public void store(ArrayList<Task> updatedTasks) {
+        assert updatedTasks != null : "updatedTasks must not be null";
         String line;
         // Update tasks list
         try (FileWriter fw = new FileWriter(f, false)) {
             for (int i = 0; i < updatedTasks.size(); i++) {
                 Task t = updatedTasks.get(i);
+                assert t != null : "Task in updatedTasks must not be null";
                 if (t.getType().equals("d")) {
                     Deadline d = (Deadline) updatedTasks.get(i);
                     line = d.getType() + "," + d.getTask() + "," + d.isDone()

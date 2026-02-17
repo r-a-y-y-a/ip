@@ -45,6 +45,7 @@ public class UI {
      * @param record the TaskList to check for upcoming deadlines/events
      */
     public void printWelcome(TaskList record) {
+        assert record != null : "TaskList record must not be null";
         printWelcome();
         java.util.ArrayList<Task> upcoming = record.getUpcomingWithinWeek();
         if (upcoming == null || upcoming.size() == 0) {
@@ -202,6 +203,9 @@ public class UI {
      */
     public String processCommand(String input, TaskList record, Storage storage) {
         try {
+            assert input != null : "input must not be null";
+            assert record != null : "record must not be null";
+            assert storage != null : "storage must not be null";
             input = input.trim();
             if (input.isEmpty()) {
                 return "OOPS! Come on fishball! This is an empty input! Please enter a command!";
@@ -420,6 +424,8 @@ public class UI {
      * @throws FishballException if an error occurs during input processing
      */
     public void handleInput(TaskList record, Storage storage) throws FishballException {
+        assert record != null : "record must not be null";
+        assert storage != null : "storage must not be null";
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 String input = scanner.nextLine();
