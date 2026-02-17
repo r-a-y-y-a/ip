@@ -40,6 +40,25 @@ public class UI {
     }
 
     /**
+     * Displays the welcome message and any upcoming deadlines/events within the next 7 days.
+     *
+     * @param record the TaskList to check for upcoming deadlines/events
+     */
+    public void printWelcome(TaskList record) {
+        printWelcome();
+        java.util.ArrayList<Task> upcoming = record.getUpcomingWithinWeek();
+        if (upcoming == null || upcoming.size() == 0) {
+            System.out.println(INDENT + "No upcoming deadlines or events within the next 7 days." + "\n" + INDENT + HORIZONTAL_LINE);
+            return;
+        }
+        System.out.println(INDENT + "Here are the upcoming deadlines/events within the next 7 days:");
+        for (int i = 0; i < upcoming.size(); i++) {
+            System.out.println(INDENT + (i + 1) + ". " + upcoming.get(i));
+        }
+        System.out.println(INDENT + HORIZONTAL_LINE);
+    }
+
+    /**
      * Displays the exit message when the application terminates.
      */
     public void printExit() {
@@ -205,6 +224,19 @@ public class UI {
                     sb.append((i + 1)).append(". ").append(record.get(i)).append("\n");
                 }
                 return sb.toString();
+            } else if (command.equals("reminder")) {
+                if (parse.length != 1) {
+                    return "OOPS! Come on fishball! The reminder command does not take any parameters! Just type 'reminder' to see upcoming deadlines.";
+                }
+                java.util.ArrayList<Task> upcoming = record.getUpcomingWithinWeek();
+                if (upcoming == null || upcoming.size() == 0) {
+                    return "No upcoming deadlines or events within the next 7 days.";
+                }
+                StringBuilder rsb = new StringBuilder("Here are the upcoming deadlines/events within the next 7 days:\n");
+                for (int i = 0; i < upcoming.size(); i++) {
+                    rsb.append((i + 1)).append(". ").append(upcoming.get(i)).append("\n");
+                }
+                return rsb.toString();
             } else if (command.equals("find")) {
                 if (parse.length < 2) {
                     return "OOPS! Come on fishball! Please provide a keyword in the format: find <keyword>";

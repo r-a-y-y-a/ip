@@ -1,7 +1,10 @@
 package utils;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 import tasks.Task;
+import tasks.Deadline;
+import tasks.Event;
 
 /**
  * TaskList is a wrapper class for managing a collection of Task objects.
@@ -88,5 +91,34 @@ public class TaskList {
             out.append(i + 1).append(".").append(tasks.get(i).toString()).append("\n");
         }
         return out.toString();
+    }
+
+    /**
+     * Returns a list of tasks that have a deadline or event end within the next 7 days.
+     * Both deadlines and events are considered. Completed tasks are ignored.
+     *
+     * @return an ArrayList of upcoming tasks within the next 7 days
+     */
+    public ArrayList<Task> getUpcomingWithinWeek() {
+        ArrayList<Task> upcoming = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime limit = now.plusDays(7);
+        for (Task t : this.tasks) {
+            if (t.isDone()) {
+                continue;
+            }
+            if (t instanceof Deadline) {
+                LocalDateTime dl = ((Deadline) t).getDeadline();
+                if ((dl.isAfter(now) || dl.isEqual(now)) && (dl.isBefore(limit) || dl.isEqual(limit))) {
+                    upcoming.add(t);
+                }
+            } else if (t instanceof Event) {
+                LocalDateTime end = ((Event) t).getEnd();
+                if ((end.isAfter(now) || end.isEqual(now)) && (end.isBefore(limit) || end.isEqual(limit))) {
+                    upcoming.add(t);
+                }
+            }
+        }
+        return upcoming;
     }
 }
