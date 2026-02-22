@@ -100,7 +100,7 @@ public class MainWindow extends AnchorPane {
         String response = fishball.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getDukeDialog(response, fishballImage)
+                DialogBox.getFishballDialog(response, fishballImage)
         );
         userInput.clear();
 

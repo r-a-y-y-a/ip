@@ -89,7 +89,7 @@ public class DialogBox extends HBox {
      * @param img the image representing the Fishball bot's avatar
      * @return a new DialogBox configured for displaying a bot response
      */
-    public static DialogBox getDukeDialog(String text, Image img) {
+    public static DialogBox getFishballDialog(String text, Image img) {
         var db = new DialogBox(text, img);
         db.flip();
         return db;

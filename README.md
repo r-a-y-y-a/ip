@@ -1,6 +1,6 @@
-# Fishball (Duke) — IP Project
+# Fishball — IP Project
 
-Fishball is a lightweight, text-based task manager inspired by the Duke project template. It provides simple commands for creating, listing, marking, unmarking, deleting and searching tasks. This repository contains the application source, unit tests, and utilities for storing tasks on disk.
+Fishball is a lightweight, text-based task manager. It provides simple commands for creating, listing, marking, unmarking, deleting and searching tasks. This repository contains the application source, unit tests, and utilities for storing tasks on disk.
 
 **Status:** work-in-progress
 
@@ -10,6 +10,7 @@ Fishball is a lightweight, text-based task manager inspired by the Duke project 
 
 - Overview
 - Features
+- User Guide
 - Project structure
 - Prerequisites
 - Setting up in IntelliJ
@@ -38,7 +39,131 @@ The main entrypoint is `src/main/java/Fishball.java`.
 - Mark / unmark tasks: `mark <n>` / `unmark <n>`
 - Delete tasks: `delete <n>`
 - Find tasks by whole-word keyword: `find <keyword>`
+- View upcoming tasks: `reminder`
 - Persist tasks between runs using a local file
+
+---
+
+## User Guide
+
+Fishball is a CLI-first task manager designed for fast keyboard input. This section explains all available commands with examples.
+
+### Notes about command format
+
+- Words in `UPPER_CASE` are parameters to be supplied by the user. e.g. in `todo TASK`, `TASK` is a parameter which can be used as `todo Read book`.
+- Items in square brackets are optional. e.g. `deadline TASK /by DATE` can be used as shown.
+- The index `N` in commands must be a positive integer (1, 2, 3, …).
+
+### Quick start
+
+1. Ensure you have JDK 17 or above installed.
+2. Download or clone the Fishball repository.
+3. Run `./gradlew run` (or `./gradlew.bat run` on Windows) from the project root.
+4. A CLI prompt will appear. Type a command and press Enter to execute it.
+
+Try these example commands:
+- `list` — shows all tasks
+- `todo Buy groceries` — adds a new task
+- `bye` — exits the application
+
+Refer to the features below for details of each command.
+
+### Features
+
+#### Adding tasks: `todo`, `deadline`, `event`
+
+**Todo task:**
+
+Creates a simple task with just a description.
+
+Format: `todo TASK`
+
+Example: `todo Buy groceries`
+
+**Deadline task:**
+
+Creates a task with a deadline date and time. Date format is `dd-MM-yyyy HHmm` (e.g., 25-12-2024 1800).
+
+Format: `deadline TASK /by DATE TIME`
+
+Example: `deadline Submit project /by 15-03-2024 2359`
+
+**Event task:**
+
+Creates a task with a start and end date/time.
+
+Format: `event TASK /from START_DATE START_TIME /to END_DATE END_TIME`
+
+Example: `event Team meeting /from 20-02-2024 1000 /to 20-02-2024 1100`
+
+#### Listing tasks: `list`
+
+Shows all tasks in your task list with their status (marked or unmarked).
+
+Format: `list`
+
+#### Marking tasks: `mark`, `unmark`
+
+Marks a task as done or undone.
+
+Format: `mark N` or `unmark N`
+- Marks the task at index `N` as done or not done.
+- The index refers to the number shown in the task list (starting from 1).
+
+Examples:
+- `mark 1` — marks the 1st task as done
+- `unmark 3` — marks the 3rd task as not done
+
+#### Deleting tasks: `delete`
+
+Removes a task from the list.
+
+Format: `delete N`
+- Deletes the task at index `N`.
+- The index refers to the number shown in the task list (starting from 1).
+
+Example: `delete 2` — deletes the 2nd task in the list
+
+#### Finding tasks: `find`
+
+Searches for tasks by a keyword (whole-word matching, case-insensitive).
+
+Format: `find KEYWORD`
+- Only full words are matched. e.g. `book` will not match `books`.
+- Matching is case-insensitive.
+
+Example: `find meeting` — shows all tasks that mention "meeting"
+
+#### Viewing upcoming reminders: `reminder`
+
+Shows all tasks with deadlines or event endings within the next 7 days that are not yet marked as done.
+
+Format: `reminder`
+
+#### Exiting: `bye`
+
+Exits the application. All changes are automatically saved.
+
+Format: `bye`
+
+#### Saving data
+
+All changes to your task list are automatically saved to disk (`data/fishball.txt`) after each command. There is no need to save manually.
+
+### Command summary
+
+| Command | Format | Example |
+|---------|--------|---------|
+| Add ToDo | `todo TASK` | `todo Buy groceries` |
+| Add Deadline | `deadline TASK /by DATE TIME` | `deadline Submit project /by 15-03-2024 2359` |
+| Add Event | `event TASK /from DATE TIME /to DATE TIME` | `event Meeting /from 20-02-2024 1000 /to 20-02-2024 1100` |
+| List | `list` | `list` |
+| Mark | `mark N` | `mark 1` |
+| Unmark | `unmark N` | `unmark 1` |
+| Delete | `delete N` | `delete 2` |
+| Find | `find KEYWORD` | `find meeting` |
+| Reminder | `reminder` | `reminder` |
+| Exit | `bye` | `bye` |
 
 ---
 
@@ -157,7 +282,7 @@ Use this example as a starting template for your PR description. It demonstrates
 
 #### Upcoming features
 
-- [X] 'find' command to find specific tasks - pull up relevant tasks in an instant! 
+- [X] 'find' command to find specific tasks - pull up relevant tasks in an instant!
 - [ ] GUI (desktop graphical user interface) — provide a visual way to manage tasks.
 - [ ] Text-to-speech support — read tasks aloud and provide spoken notifications.
 
