@@ -1,6 +1,6 @@
 # Fishball — IP Project
 
-Fishball is a lightweight, text-based task manager. It provides simple commands for creating, listing, marking, unmarking, deleting and searching tasks. This repository contains the application source, unit tests, and utilities for storing tasks on disk.
+Fishball is a lightweight, text-based task manager. It provides simple commands for creating, listing, marking, unmarking, deleting and searching tasks.
 
 **Status:** work-in-progress
 
