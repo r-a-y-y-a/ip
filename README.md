@@ -309,5 +309,3 @@ find book
 - If you want case-sensitive matching, update the `UI.find` method accordingly.
 
 ---
-
-If you want this PR template to be added as a GitHub PR template file (e.g. `.github/pull_request_template.md`), I can add it for you.
