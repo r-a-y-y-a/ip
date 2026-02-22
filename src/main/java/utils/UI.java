@@ -3,11 +3,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
-import exceptions.EmptyTaskException;
 import exceptions.FishballException;
-import exceptions.InvalidCommandException;
-import exceptions.InvalidIndexException;
-import exceptions.MissingParameterException;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
@@ -49,7 +45,11 @@ public class UI {
         printWelcome();
         java.util.ArrayList<Task> upcoming = record.getUpcomingWithinWeek();
         if (upcoming == null || upcoming.size() == 0) {
-            System.out.println(INDENT + "No upcoming deadlines or events within the next 7 days." + "\n" + INDENT + HORIZONTAL_LINE);
+            System.out.println(INDENT
+                    + "No upcoming deadlines or events within the next 7 days."
+                    + "\n"
+                    + INDENT
+                    + HORIZONTAL_LINE);
             return;
         }
         System.out.println(INDENT + "Here are the upcoming deadlines/events within the next 7 days:");
@@ -230,13 +230,15 @@ public class UI {
                 return sb.toString();
             } else if (command.equals("reminder")) {
                 if (parse.length != 1) {
-                    return "OOPS! Come on fishball! The reminder command does not take any parameters! Just type 'reminder' to see upcoming deadlines.";
+                    return "OOPS! Come on fishball! The reminder command does not take any parameters! "
+                            + "Just type 'reminder' to see upcoming deadlines.";
                 }
                 java.util.ArrayList<Task> upcoming = record.getUpcomingWithinWeek();
                 if (upcoming == null || upcoming.size() == 0) {
                     return "No upcoming deadlines or events within the next 7 days.";
                 }
-                StringBuilder rsb = new StringBuilder("Here are the upcoming deadlines/events within the next 7 days:\n");
+                StringBuilder rsb = new StringBuilder("Here are the upcoming "
+                        + "deadlines/events within the next 7 days:\n");
                 for (int i = 0; i < upcoming.size(); i++) {
                     rsb.append((i + 1)).append(". ").append(upcoming.get(i)).append("\n");
                 }
@@ -267,7 +269,8 @@ public class UI {
                 try {
                     int index = Integer.parseInt(parse[1].trim()) - 1;
                     if (index < 0 || index >= record.size()) {
-                        return "OOPS! Come on fishball! Task number is out of range! Please provide a valid task number.";
+                        return "OOPS! Come on fishball! Task number is out of range! "
+                                + "Please provide a valid task number.";
                     }
                     Task delete = record.get(index);
                     record.remove(index);
@@ -281,7 +284,8 @@ public class UI {
                 try {
                     int index = Integer.parseInt(parse[1]) - 1;
                     if (index < 0 || index >= record.size()) {
-                        return "OOPS! Come on fishball! Task number is out of range! Please provide a valid task number.";
+                        return "OOPS! Come on fishball! Task number is out of range! "
+                                + "Please provide a valid task number.";
                     }
                     record.get(index).mark();
                     storage.store(record.getAll());
@@ -293,7 +297,8 @@ public class UI {
                 try {
                     int index = Integer.parseInt(parse[1]) - 1;
                     if (index < 0 || index >= record.size()) {
-                        return "OOPS! Come on fishball! Task number is out of range! Please provide a valid task number.";
+                        return "OOPS! Come on fishball! Task number is out of range! "
+                                + "Please provide a valid task number.";
                     }
                     record.get(index).unmark();
                     storage.store(record.getAll());

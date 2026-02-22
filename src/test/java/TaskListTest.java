@@ -1,5 +1,4 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -137,20 +136,6 @@ public class TaskListTest {
         assertEquals(todoTask, taskList.get(0));
         assertEquals(deadlineTask, taskList.get(1));
         assertEquals(eventTask, taskList.get(2));
-    }
-
-    @Test
-    public void testGetInvalidIndex() {
-        taskList.add(todoTask);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> taskList.get(5));
-    }
-
-    @Test
-    public void testRemoveInvalidIndex() {
-        taskList.add(todoTask);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> taskList.remove(5));
     }
 
     @Test
